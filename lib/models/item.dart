@@ -10,7 +10,7 @@ class Item {
   final String description;
   final String? imagePath;
   final List<String> tags;
-  final bool isRecovered;
+  final bool recovered;
   final DateTime? reminderDate;
 
   Item({
@@ -23,7 +23,7 @@ class Item {
     required this.description,
     this.imagePath,
     this.tags = const [],
-    this.isRecovered = false,
+    this.recovered = false,
     this.reminderDate,
   });
 
@@ -38,7 +38,7 @@ class Item {
       'description': description,
       'imagePath': imagePath,
       'tags': tags,
-      'isRecovered': isRecovered,
+      'recovered': recovered,
       'reminderDate': reminderDate?.toIso8601String(),
     };
   }
@@ -54,7 +54,7 @@ class Item {
       description: json['description'],
       imagePath: json['imagePath'],
       tags: List<String>.from(json['tags'] ?? []),
-      isRecovered: json['isRecovered'] ?? false,
+      recovered: json['recovered'] ?? false,
       reminderDate: json['reminderDate'] != null 
           ? DateTime.parse(json['reminderDate'])
           : null,
@@ -71,7 +71,7 @@ class Item {
     String? description,
     String? imagePath,
     List<String>? tags,
-    bool? isRecovered,
+    bool? recovered,
     DateTime? reminderDate,
   }) {
     return Item(
@@ -84,7 +84,7 @@ class Item {
       description: description ?? this.description,
       imagePath: imagePath ?? this.imagePath,
       tags: tags ?? this.tags,
-      isRecovered: isRecovered ?? this.isRecovered,
+      recovered: recovered ?? this.recovered,
       reminderDate: reminderDate ?? this.reminderDate,
     );
   }

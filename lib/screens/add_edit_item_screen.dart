@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter/cupertino.dart';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../models/item.dart';
 import '../utils/storage_service.dart';
 
 class AddEditItemScreen extends StatefulWidget {
   final StorageService storageService;
-  final Item? item; // If provided, we're editing an existing item
+  final Item? item;
 
   const AddEditItemScreen({
     super.key,
@@ -25,8 +24,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   final _typeController = TextEditingController();
   final _areaController = TextEditingController();
   final _descriptionController = TextEditingController();
-  bool _isLost = true;
+  final _tagsController = TextEditingController();
   String? _imagePath;
+  bool _isLost = true;
   DateTime _date = DateTime.now();
   final List<String> _tags = [];
 
@@ -38,8 +38,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       _typeController.text = widget.item!.type;
       _areaController.text = widget.item!.area;
       _descriptionController.text = widget.item!.description;
-      _isLost = widget.item!.isLost;
       _imagePath = widget.item!.imagePath;
+      _isLost = widget.item!.isLost;
       _date = widget.item!.date;
       _tags.addAll(widget.item!.tags);
     }
@@ -51,201 +51,339 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     _typeController.dispose();
     _areaController.dispose();
     _descriptionController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
+    final image = await picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1800,
-      maxHeight: 1800,
+      maxWidth: 1200,
+      maxHeight: 1200,
       imageQuality: 85,
     );
-    if (pickedFile != null) {
+
+    if (image != null) {
       setState(() {
-        _imagePath = pickedFile.path;
+        _imagePath = image.path;
       });
     }
   }
 
-  Future<void> _selectDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _date,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
+  void _addTag() {
+    final tag = _tagsController.text.trim();
+    if (tag.isNotEmpty && !_tags.contains(tag)) {
       setState(() {
-        _date = picked;
+        _tags.add(tag);
+        _tagsController.clear();
       });
     }
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _tags.remove(tag);
+    });
   }
 
   Future<void> _saveItem() async {
-    if (_formKey.currentState!.validate()) {
-      final item = Item(
-        id: widget.item?.id ?? const Uuid().v4(),
-        name: _nameController.text,
-        type: _typeController.text,
-        area: _areaController.text,
-        date: _date,
-        isLost: _isLost,
-        description: _descriptionController.text,
-        imagePath: _imagePath,
-        tags: _tags,
+    if (_nameController.text.isEmpty ||
+        _typeController.text.isEmpty ||
+        _areaController.text.isEmpty) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text('Missing Information'),
+          content: const Text('Please fill in all required fields.'),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
+      return;
+    }
 
-      if (widget.item != null) {
-        await widget.storageService.updateItem(item);
-      } else {
-        await widget.storageService.addItem(item);
-      }
+    final item = Item(
+      id: widget.item?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text,
+      type: _typeController.text,
+      area: _areaController.text,
+      description: _descriptionController.text,
+      imagePath: _imagePath,
+      isLost: _isLost,
+      date: _date,
+      tags: _tags,
+    );
 
-      if (mounted) {
-        Navigator.pop(context, true);
-      }
+    if (widget.item != null) {
+      await widget.storageService.updateItem(item);
+    } else {
+      await widget.storageService.addItem(item);
+    }
+
+    if (mounted) {
+      Navigator.pop(context, true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.item == null ? 'Add Item' : 'Edit Item'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(widget.item == null ? 'Add Item' : 'Edit Item'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Text('Save'),
+          onPressed: _saveItem,
+        ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
+      child: SafeArea(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Item Name',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an item name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _typeController,
-              decoration: const InputDecoration(
-                labelText: 'Item Type',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an item type';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _areaController,
-              decoration: const InputDecoration(
-                labelText: 'Area',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an area';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a description';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _selectDate,
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(_date.toString().split(' ')[0]),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: _pickImage,
+                child: AspectRatio(
+                  aspectRatio: 16 / 9,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: CupertinoColors.systemGrey6,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: _imagePath != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              File(_imagePath!),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Center(
+                                  child: Icon(CupertinoIcons.photo),
+                                );
+                              },
+                            ),
+                          )
+                        : const Center(
+                            child: Icon(
+                              CupertinoIcons.photo,
+                              size: 48,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                          ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: SegmentedButton<bool>(
-                    segments: const [
-                      ButtonSegment<bool>(
-                        value: true,
-                        label: Text('Lost'),
-                        icon: Icon(Icons.hourglass_empty),
+              ),
+              const SizedBox(height: 24),
+              CupertinoSegmentedControl<bool>(
+                children: const {
+                  true: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text('Lost'),
+                  ),
+                  false: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text('Found'),
+                  ),
+                },
+                groupValue: _isLost,
+                onValueChanged: (value) {
+                  setState(() {
+                    _isLost = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Item Details',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: CupertinoColors.activeBlue,
+                ),
+              ),
+              const SizedBox(height: 16),
+              CupertinoTextField(
+                controller: _nameController,
+                placeholder: 'Name *',
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: _typeController,
+                placeholder: 'Type *',
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: _areaController,
+                placeholder: 'Area *',
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CupertinoTextField(
+                controller: _descriptionController,
+                placeholder: 'Description',
+                padding: const EdgeInsets.all(12),
+                maxLines: 3,
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Date',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: CupertinoColors.activeBlue,
+                ),
+              ),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () async {
+                  final date = await showCupertinoModalPopup<DateTime>(
+                    context: context,
+                    builder: (context) => Container(
+                      height: 216,
+                      padding: const EdgeInsets.only(top: 6.0),
+                      margin: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
                       ),
-                      ButtonSegment<bool>(
-                        value: false,
-                        label: Text('Found'),
-                        icon: Icon(Icons.find_in_page),
+                      color: CupertinoColors.systemBackground.resolveFrom(context),
+                      child: SafeArea(
+                        top: false,
+                        child: CupertinoDatePicker(
+                          initialDateTime: _date,
+                          mode: CupertinoDatePickerMode.date,
+                          use24hFormat: true,
+                          onDateTimeChanged: (DateTime newDate) {
+                            setState(() => _date = newDate);
+                          },
+                        ),
+                      ),
+                    ),
+                  );
+                  if (date != null) {
+                    setState(() => _date = date);
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.systemGrey6,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _date.toString().split(' ')[0],
+                        style: const TextStyle(
+                          fontSize: 17,
+                        ),
+                      ),
+                      const Icon(
+                        CupertinoIcons.calendar,
+                        color: CupertinoColors.systemGrey,
                       ),
                     ],
-                    selected: {_isLost},
-                    onSelectionChanged: (Set<bool> newSelection) {
-                      setState(() {
-                        _isLost = newSelection.first;
-                      });
-                    },
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: _pickImage,
-              icon: const Icon(Icons.image),
-              label: Text(_imagePath == null ? 'Add Image' : 'Change Image'),
-            ),
-            if (_imagePath != null) ...[
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.file(
-                  File(_imagePath!),
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      width: double.infinity,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Text('Failed to load image'),
-                      ),
-                    );
-                  },
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Tags',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: CupertinoColors.activeBlue,
                 ),
               ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: CupertinoTextField(
+                      controller: _tagsController,
+                      placeholder: 'Add a tag',
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(12),
+                    color: CupertinoColors.activeBlue,
+                    borderRadius: BorderRadius.circular(8),
+                    child: const Icon(CupertinoIcons.add),
+                    onPressed: _addTag,
+                  ),
+                ],
+              ),
+              if (_tags.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _tags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            tag,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          GestureDetector(
+                            onTap: () => _removeTag(tag),
+                            child: const Icon(
+                              CupertinoIcons.xmark_circle_fill,
+                              size: 16,
+                              color: CupertinoColors.systemGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _saveItem,
-              child: Text(widget.item == null ? 'Add Item' : 'Save Changes'),
-            ),
-          ],
+          ),
         ),
       ),
     );
