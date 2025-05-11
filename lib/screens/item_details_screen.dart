@@ -97,18 +97,21 @@ class ItemDetailsScreen extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: item.imagePath != null
-                      ? Image.file(
-                          File(item.imagePath!),
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: CupertinoColors.systemGrey6,
-                              child: const Center(
-                                child: Icon(CupertinoIcons.photo),
-                              ),
-                            );
-                          },
-                        )
+                      ? Hero(
+                        tag:ValueKey("my-image-${item.imagePath}"),
+                        child: Image.file(
+                            File(item.imagePath!),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: CupertinoColors.systemGrey6,
+                                child: const Center(
+                                  child: Icon(CupertinoIcons.photo),
+                                ),
+                              );
+                            },
+                          ),
+                      )
                       : Container(
                           color: item.recovered
                               ? CupertinoColors.systemGreen.withOpacity(0.1)

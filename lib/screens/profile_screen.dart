@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show CircleAvatar;
+import 'package:flutter/material.dart' show CircleAvatar, Colors;
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -274,8 +274,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               CupertinoButton(
                 color: CupertinoColors.activeBlue,
-                child: const Text('Change PIN'),
                 onPressed: _changePassword,
+                child: const Text('Change PIN' , style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold
+
+                ),),
               ),
             ],
           ),
