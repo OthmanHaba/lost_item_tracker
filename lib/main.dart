@@ -1,16 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/item_list_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/profile_screen.dart';
 import 'utils/storage_service.dart';
+import 'providers/language_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final storageService = StorageService(prefs);
-  runApp(MyApp(storageService: storageService));
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => LanguageProvider(),
+      child: MyApp(storageService: storageService),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -20,14 +30,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
-      title: 'Lost Item Tracker',
-      theme: const CupertinoThemeData(
-        primaryColor: CupertinoColors.systemBlue,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: CupertinoColors.systemBackground,
-      ),
-      home: LoginScreen(storageService: storageService),
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return CupertinoApp(
+          title: 'Lost Item Tracker',
+          theme:  CupertinoThemeData(
+            primaryColor: CupertinoColors.systemBlue,
+            brightness: Brightness.light,
+            textTheme: CupertinoTextThemeData(
+              textStyle: GoogleFonts.tajawal()
+            ),
+            scaffoldBackgroundColor: CupertinoColors.systemBackground,
+          ),
+          locale: languageProvider.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('ar'),
+          ],
+          home: LoginScreen(storageService: storageService),
+        );
+      },
     );
   }
 }
@@ -61,3 +89,8 @@ class HomePage extends StatelessWidget {
     );
   }
 }
+
+extension Loclizer on BuildContext {
+  AppLocalizations get t => AppLocalizations.of(this)!;
+}
+

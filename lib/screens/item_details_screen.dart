@@ -1,8 +1,18 @@
 import 'package:flutter/cupertino.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lost_item_tracker/main.dart';
 import 'dart:io';
 import '../models/item.dart';
 import '../utils/storage_service.dart';
 import 'add_edit_item_screen.dart';
+
+class CustomText extends Text {
+  const CustomText(super.data, {super.key});
+
+
+  @override
+  TextStyle? get style => GoogleFonts.tajawal();
+}
 
 class ItemDetailsScreen extends StatelessWidget {
   final Item item;
@@ -18,7 +28,9 @@ class ItemDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Item Details'),
+        middle:  CustomText(
+          context.t.itemDetails
+        ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
           child: const Icon(CupertinoIcons.ellipsis),
@@ -43,7 +55,9 @@ class ItemDetailsScreen extends StatelessWidget {
                         Navigator.pop(context, true);
                       }
                     },
-                    child: const Text('Edit Item'),
+                    child: CustomText(
+                        context.t.editItem
+                    ),
                   ),
                   CupertinoActionSheetAction(
                     isDestructiveAction: true,
@@ -52,18 +66,23 @@ class ItemDetailsScreen extends StatelessWidget {
                       final confirmed = await showCupertinoDialog<bool>(
                         context: context,
                         builder: (context) => CupertinoAlertDialog(
-                          title: const Text('Delete Item'),
-                          content: const Text(
-                              'Are you sure you want to delete this item?'),
+                          title: CustomText(
+                            context.t.deleteItem
+                          ),
+                          content:  CustomText(
+                            context.t.deleteItemConfirmation
+                              ),
                           actions: [
                             CupertinoDialogAction(
                               onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
+                              child:  CustomText(
+                                context.t.cancel
+                              ),
                             ),
                             CupertinoDialogAction(
                               isDestructiveAction: true,
                               onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Delete'),
+                              child: CustomText(context.t.delete),
                             ),
                           ],
                         ),
@@ -76,12 +95,16 @@ class ItemDetailsScreen extends StatelessWidget {
                         }
                       }
                     },
-                    child: const Text('Delete Item'),
+                    child:  CustomText(
+                      context.t.deleteItem
+                    ),
                   ),
                 ],
                 cancelButton: CupertinoActionSheetAction(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child:  Text(
+                    context.t.cancel
+                  ),
                 ),
               ),
             );
@@ -166,10 +189,10 @@ class ItemDetailsScreen extends StatelessWidget {
                             ),
                             child: Text(
                               item.recovered
-                                  ? 'Recovered'
+                                  ? context.t.recovered
                                   : item.isLost
-                                      ? 'Lost'
-                                      : 'Found',
+                                      ? context.t.lost
+                                      : context.t.found,
                               style: TextStyle(
                                 color: item.recovered
                                     ? CupertinoColors.systemGreen
@@ -193,17 +216,17 @@ class ItemDetailsScreen extends StatelessWidget {
                               color: CupertinoColors.systemGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Row(
+                            child:  Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
+                                const Icon(
                                   CupertinoIcons.checkmark_circle,
                                   color: CupertinoColors.systemGreen,
                                 ),
-                                SizedBox(width: 8),
+                                const SizedBox(width: 8),
                                 Text(
-                                  'Mark as Recovered',
-                                  style: TextStyle(
+                                  context.t.markAsRecovered,
+                                  style: const TextStyle(
                                     color: CupertinoColors.systemGreen,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -215,17 +238,20 @@ class ItemDetailsScreen extends StatelessWidget {
                             final confirmed = await showCupertinoDialog<bool>(
                               context: context,
                               builder: (context) => CupertinoAlertDialog(
-                                title: const Text('Mark as Recovered'),
-                                content: const Text(
-                                    'Are you sure you want to mark this item as recovered?'),
+                                title:  CustomText(context.t.markAsRecovered),
+                                content: CustomText(
+                                  context.t.markAsRecoveredConfirmation
+                                ),
                                 actions: [
                                   CupertinoDialogAction(
                                     onPressed: () => Navigator.pop(context, false),
-                                    child: const Text('Cancel'),
+                                    child:  CustomText(context.t.cancel),
                                   ),
                                   CupertinoDialogAction(
                                     onPressed: () => Navigator.pop(context, true),
-                                    child: const Text('Mark as Recovered'),
+                                    // child: const Text('Mark as Recovered'),
+                                    child: CustomText(context.t.markAsRecovered),
+
                                   ),
                                 ],
                               ),
@@ -242,7 +268,7 @@ class ItemDetailsScreen extends StatelessWidget {
                         ),
                       const SizedBox(height: 24),
                       _buildInfoSection(
-                        'Details',
+                        context.t.itemDetails,
                         [
                           _buildInfoRow('Type', item.type),
                           _buildInfoRow('Area', item.area),
@@ -254,7 +280,7 @@ class ItemDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 24),
                       _buildInfoSection(
-                        'Description',
+                        context.t.description,
                         [
                           Text(
                             item.description,
@@ -268,7 +294,7 @@ class ItemDetailsScreen extends StatelessWidget {
                       if (item.tags.isNotEmpty) ...[
                         const SizedBox(height: 24),
                         _buildInfoSection(
-                          'Tags',
+                          context.t.tags,
                           [
                             Wrap(
                               spacing: 8,

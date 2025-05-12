@@ -1,8 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show CircleAvatar, Colors;
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+class CustomText extends Text {
+  const CustomText(super.data, {super.key});
+
+  @override 
+  TextStyle? get style => GoogleFonts.tajawal();
+}
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -74,14 +86,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     String confirmPin = '';
 
     await showCupertinoDialog(
-      context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Change PIN'),
+        title: Text(AppLocalizations.of(context)!.changePin),
         content: Column(
           children: [
-            const Text('Enter current PIN:'),
+            Text(AppLocalizations.of(context)!.enterCurrentPin),
             CupertinoTextField(
-              placeholder: 'Current PIN',
+              placeholder: AppLocalizations.of(context)!.newPin,
               keyboardType: TextInputType.number,
               maxLength: 4,
               onChanged: (value) {
@@ -96,10 +107,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
         ],
       ),
+      context: context,
     );
   }
 
@@ -110,11 +122,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Enter New PIN'),
+        title: Text(AppLocalizations.of(context)!.changePin),
         content: Column(
           children: [
             CupertinoTextField(
-              placeholder: 'New PIN',
+              placeholder: AppLocalizations.of(context)!.newPin,
               keyboardType: TextInputType.number,
               maxLength: 4,
               onChanged: (value) {
@@ -123,7 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 8),
             CupertinoTextField(
-              placeholder: 'Confirm New PIN',
+              placeholder: AppLocalizations.of(context)!.confirmNewPin,
               keyboardType: TextInputType.number,
               maxLength: 4,
               onChanged: (value) {
@@ -135,7 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           CupertinoDialogAction(
             onPressed: () async {
@@ -144,13 +156,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 await prefs.setString('pin', newPin);
                 if (mounted) {
                   Navigator.pop(context);
-                  _showSuccess('PIN changed successfully');
+                  _showSuccess(AppLocalizations.of(context)!.pinChanged);
                 }
               } else {
-                _showError('PINs do not match or are invalid');
+                _showError(AppLocalizations.of(context)!.pinsDoNotMatch);
               }
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -161,12 +173,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
+        title: Text(AppLocalizations.of(context)!.error),
         content: Text(message),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(context)!.ok),
           ),
         ],
       ),
@@ -177,12 +189,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Success'),
+        title: Text(AppLocalizations.of(context)!.save),
         content: Text(message),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(context)!.ok),
           ),
         ],
       ),
@@ -191,18 +203,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Profile'),
+        middle: Text(l10n.profile),
         trailing: _isEditing
             ? CupertinoButton(
                 padding: EdgeInsets.zero,
-                child: const Text('Save'),
+                child: Text(l10n.save),
                 onPressed: _saveUserData,
               )
             : CupertinoButton(
                 padding: EdgeInsets.zero,
-                child: const Text('Edit'),
+                child: Text(l10n.edit),
                 onPressed: () => setState(() => _isEditing = true),
               ),
       ),
@@ -252,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 24),
               CupertinoTextField(
                 controller: _nameController,
-                placeholder: 'Name',
+                placeholder: l10n.name,
                 enabled: _isEditing,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -263,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: _emailController,
-                placeholder: 'Email',
+                placeholder: l10n.email,
                 enabled: _isEditing,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -275,11 +290,95 @@ class _ProfileScreenState extends State<ProfileScreen> {
               CupertinoButton(
                 color: CupertinoColors.activeBlue,
                 onPressed: _changePassword,
-                child: const Text('Change PIN' , style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold
-
-                ),),
+                child: Text(
+                  l10n.changePin,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: CupertinoColors.systemGrey6,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.language,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: languageProvider.isEnglish
+                                    ? CupertinoColors.activeBlue
+                                    : CupertinoColors.systemGrey5,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                l10n.english,
+                                style: TextStyle(
+                                  color: languageProvider.isEnglish
+                                      ? CupertinoColors.white
+                                      : CupertinoColors.systemGrey,
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              languageProvider.setLanguage('en');
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: !languageProvider.isEnglish
+                                    ? CupertinoColors.activeBlue
+                                    : CupertinoColors.systemGrey5,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                l10n.arabic,
+                                style: TextStyle(
+                                  color: !languageProvider.isEnglish
+                                      ? CupertinoColors.white
+                                      : CupertinoColors.systemGrey,
+                                ),
+                              ),
+                            ),
+                            onPressed: () {
+                              languageProvider.setLanguage('ar');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

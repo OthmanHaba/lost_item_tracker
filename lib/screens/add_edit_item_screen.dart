@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:lost_item_tracker/main.dart';
 import '../models/item.dart';
 import '../utils/storage_service.dart';
 
@@ -16,6 +19,12 @@ class AddEditItemScreen extends StatefulWidget {
 
   @override
   State<AddEditItemScreen> createState() => _AddEditItemScreenState();
+}
+
+class CustomText extends Text {
+  const CustomText(super.data, {super.key });
+  @override
+  TextStyle? get style => GoogleFonts.tajawal();
 }
 
 class _AddEditItemScreenState extends State<AddEditItemScreen> {
@@ -94,12 +103,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
-          title: const Text('Missing Information'),
-          content: const Text('Please fill in all required fields.'),
+          title: Text(context.t.missingInformation),
+          content: Text(context.t.fillRequiredFields),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pop(context),
-              child: const Text('OK'),
+              child: Text(context.t.ok),
             ),
           ],
         ),
@@ -134,11 +143,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text(widget.item == null ? 'Add Item' : 'Edit Item'),
+        middle: CustomText(widget.item == null ? context.t.addItem : context.t.editItem ),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Text('Save'),
           onPressed: _saveItem,
+          child: CustomText(context.t.save),
         ),
       ),
       child: SafeArea(
@@ -181,14 +190,14 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
               const SizedBox(height: 24),
               CupertinoSegmentedControl<bool>(
-                children: const {
+                children:  {
                   true: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Text('Lost'),
+                    child: CustomText(context.t.lost),
                   ),
                   false: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: Text('Found'),
+                    child: CustomText(context.t.found),
                   ),
                 },
                 groupValue: _isLost,
@@ -199,9 +208,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Item Details',
-                style: TextStyle(
+              Text(
+                context.t.itemDetails,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: CupertinoColors.activeBlue,
@@ -210,7 +219,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               const SizedBox(height: 16),
               CupertinoTextField(
                 controller: _nameController,
-                placeholder: 'Name *',
+                placeholder: context.t.name,
+                style: const TextStyle(
+                    color: CupertinoColors.black
+                ),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: CupertinoColors.systemGrey6,
@@ -220,7 +232,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: _typeController,
-                placeholder: 'Type *',
+                placeholder: context.t.type,
+                style: const TextStyle(
+                    color: CupertinoColors.black
+                ),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: CupertinoColors.systemGrey6,
@@ -230,7 +245,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: _areaController,
-                placeholder: 'Area *',
+                placeholder: context.t.area,
+                style: const TextStyle(
+                    color: CupertinoColors.black
+                ),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: CupertinoColors.systemGrey6,
@@ -240,7 +258,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               const SizedBox(height: 12),
               CupertinoTextField(
                 controller: _descriptionController,
-                placeholder: 'Description',
+                placeholder: context.t.description,
+                style: const TextStyle(
+                    color: CupertinoColors.black
+                ),
                 padding: const EdgeInsets.all(12),
                 maxLines: 3,
                 decoration: BoxDecoration(
@@ -249,9 +270,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Date',
-                style: TextStyle(
+              Text(
+                context.t.date,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: CupertinoColors.activeBlue,
@@ -268,7 +289,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       margin: EdgeInsets.only(
                         bottom: MediaQuery.of(context).viewInsets.bottom,
                       ),
-                      color: CupertinoColors.systemBackground.resolveFrom(context),
+                      color:
+                          CupertinoColors.systemBackground.resolveFrom(context),
                       child: SafeArea(
                         top: false,
                         child: CupertinoDatePicker(
@@ -278,6 +300,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                           onDateTimeChanged: (DateTime newDate) {
                             setState(() => _date = newDate);
                           },
+
                         ),
                       ),
                     ),
@@ -299,6 +322,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                         _date.toString().split(' ')[0],
                         style: const TextStyle(
                           fontSize: 17,
+                          color: Colors.black
                         ),
                       ),
                       const Icon(
@@ -310,9 +334,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Tags',
-                style: TextStyle(
+               Text(
+                context.t.tags,
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: CupertinoColors.activeBlue,
@@ -324,8 +348,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   Expanded(
                     child: CupertinoTextField(
                       controller: _tagsController,
-                      placeholder: 'Add a tag',
+                      placeholder: context.t.addTag,
                       padding: const EdgeInsets.all(12),
+                      style: const TextStyle(
+                        color: CupertinoColors.black
+                      ),
                       decoration: BoxDecoration(
                         color: CupertinoColors.systemGrey6,
                         borderRadius: BorderRadius.circular(8),
@@ -335,10 +362,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   const SizedBox(width: 8),
                   CupertinoButton(
                     padding: const EdgeInsets.all(12),
-                    color: CupertinoColors.activeBlue,
+                    color: CupertinoColors.white,
                     borderRadius: BorderRadius.circular(8),
-                    child: const Icon(CupertinoIcons.add),
                     onPressed: _addTag,
+                    child: const Icon(CupertinoIcons.add),
                   ),
                 ],
               ),
@@ -388,4 +415,4 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       ),
     );
   }
-} 
+}

@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lost_item_tracker/main.dart';
 import 'dart:io';
 import '../models/item.dart';
 import '../utils/storage_service.dart';
 import 'add_edit_item_screen.dart';
 import 'item_details_screen.dart';
 import 'profile_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ItemListScreen extends StatefulWidget {
   final StorageService storageService;
@@ -13,6 +17,13 @@ class ItemListScreen extends StatefulWidget {
 
   @override
   State<ItemListScreen> createState() => _ItemListScreenState();
+}
+
+class CustomText extends Text {
+  const CustomText(super.data, {super.key});
+
+  @override
+  TextStyle? get style => GoogleFonts.tajawal();
 }
 
 class _ItemListScreenState extends State<ItemListScreen> {
@@ -47,11 +58,12 @@ class _ItemListScreenState extends State<ItemListScreen> {
             item.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             item.type.toLowerCase().contains(_searchQuery.toLowerCase()) ||
             item.area.toLowerCase().contains(_searchQuery.toLowerCase());
-        
-        final matchesStatus = (!_showOnlyLost && !_showOnlyFound && !_showRecovered) ||
-            (_showOnlyLost && item.isLost && !item.recovered) ||
-            (_showOnlyFound && !item.isLost && !item.recovered) ||
-            (_showRecovered && item.recovered);
+
+        final matchesStatus =
+            (!_showOnlyLost && !_showOnlyFound && !_showRecovered) ||
+                (_showOnlyLost && item.isLost && !item.recovered) ||
+                (_showOnlyFound && !item.isLost && !item.recovered) ||
+                (_showRecovered && item.recovered);
 
         return matchesSearch && matchesStatus;
       }).toList();
@@ -62,22 +74,22 @@ class _ItemListScreenState extends State<ItemListScreen> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Lost Item Tracker'),
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: const Icon(CupertinoIcons.person_circle),
+          onPressed: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
+            );
+          },
+        ),
+        middle: CustomText(context.t.appTitle),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: const Icon(CupertinoIcons.person_circle),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  CupertinoPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-            ),
             CupertinoButton(
               padding: EdgeInsets.zero,
               child: const Icon(CupertinoIcons.add),
@@ -106,13 +118,14 @@ class _ItemListScreenState extends State<ItemListScreen> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CupertinoSearchTextField(
-                    placeholder: 'Search items...',
+                    placeholder: context.t.searchItems,
                     onChanged: (value) {
                       setState(() {
                         _searchQuery = value;
                         _applyFilters();
                       });
                     },
+                    style: const TextStyle(color: CupertinoColors.black),
                   ),
                 ),
                 if (_isLoading)
@@ -125,16 +138,14 @@ class _ItemListScreenState extends State<ItemListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
+                          const Icon(
                             CupertinoIcons.search,
                             size: 64,
-                            color: CupertinoColors.systemGrey,
+                            color: CupertinoColors.activeGreen,
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _searchQuery.isEmpty
-                                ? 'No items yet.\nTap + to add an item.'
-                                : 'No items found matching your search.',
+                            context.t.noItemsFound,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 17,
@@ -172,23 +183,24 @@ class _ItemListScreenState extends State<ItemListScreen> {
                             final confirmed = await showCupertinoDialog<bool>(
                               context: context,
                               builder: (context) => CupertinoAlertDialog(
-                                title: const Text('Delete Item'),
-                                content: const Text(
-                                    'Are you sure you want to delete this item?'),
+                                title: Text(context.t.deleteItem),
+                                content: CustomText(
+                                    context.t.deleteItemConfirmation),
                                 actions: [
                                   CupertinoDialogAction(
-                                    onPressed: () => Navigator.pop(context, false),
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
                                     child: const Text('Cancel'),
                                   ),
                                   CupertinoDialogAction(
                                     isDestructiveAction: true,
-                                    onPressed: () => Navigator.pop(context, true),
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
                                     child: const Text('Delete'),
                                   ),
                                 ],
                               ),
                             );
-
                             if (confirmed == true) {
                               await widget.storageService.deleteItem(item.id);
                               _loadItems();
@@ -240,13 +252,14 @@ class ItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: item.imagePath != null
                     ? Hero(
-                      tag:ValueKey("my-image-${item.imagePath}"),
-                      child: Image.file(
+                        tag: ValueKey("my-image-${item.imagePath}"),
+                        child: Image.file(
                           File(item.imagePath!),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
@@ -258,7 +271,7 @@ class ItemCard extends StatelessWidget {
                             );
                           },
                         ),
-                    )
+                      )
                     : Container(
                         color: item.recovered
                             ? CupertinoColors.systemGreen.withOpacity(0.1)
@@ -292,10 +305,11 @@ class ItemCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          item.name,
+                          "${context.t.name} :${item.name}",
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w600,
+                            color: CupertinoColors.systemBlue,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -303,12 +317,12 @@ class ItemCard extends StatelessWidget {
                       ),
                       CupertinoButton(
                         padding: EdgeInsets.zero,
+                        onPressed: onDelete,
                         child: const Icon(
                           CupertinoIcons.delete,
                           size: 20,
                           color: CupertinoColors.destructiveRed,
                         ),
-                        onPressed: onDelete,
                       ),
                     ],
                   ),
@@ -325,7 +339,8 @@ class ItemCard extends StatelessWidget {
                               ? CupertinoColors.systemGreen.withOpacity(0.1)
                               : item.isLost
                                   ? CupertinoColors.systemRed.withOpacity(0.1)
-                                  : CupertinoColors.systemGreen.withOpacity(0.1),
+                                  : CupertinoColors.systemGreen
+                                      .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -389,4 +404,4 @@ class ItemCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

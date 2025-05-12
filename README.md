@@ -105,3 +105,9 @@ A Flutter-based mobile application to track lost and found items, with local dat
 - [✅] Add a simple login screen with only a password cotina of 4 numbers and set the initial password to 1111
 - [✅] add a profile page that i can change my password and store it in shared prefrences without increption and hashing 
 - [✅] add basic user details in the profile page with a profile pickture
+
+### Language and localization arabic and english
+- [✅] Add a language switcher in the profile page
+- [✅] Add arabic and english translations for all text
+- [✅] Support RTL layout for arabic
+
