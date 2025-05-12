@@ -165,74 +165,151 @@ class _LoginScreenState extends State<LoginScreen> {
                 }),
               ),
               const SizedBox(height: 48),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                alignment: WrapAlignment.center,
-                children: List.generate(9, (index) {
-                  return CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: CupertinoColors.systemGrey6,
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w500,
+              Column(
+                children: [
+                  // First row (1-3)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey6,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                           ),
+                          onPressed: () => _onPinEntered('${index + 1}'),
+                        ),
+                      );
+                    }),
+                  ),
+                  // Second row (4-6)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey6,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 4}',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                          onPressed: () => _onPinEntered('${index + 4}'),
+                        ),
+                      );
+                    }),
+                  ),
+                  // Third row (7-9)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey6,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 7}',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                          onPressed: () => _onPinEntered('${index + 7}'),
+                        ),
+                      );
+                    }),
+                  ),
+                  // Bottom row (0 and delete)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey6,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '0',
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                          onPressed: () => _onPinEntered('0'),
                         ),
                       ),
-                    ),
-                    onPressed: () => _onPinEntered('${index + 1}'),
-                  );
-                })..addAll([
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.systemGrey6,
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '0',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w500,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: _onPinDeleted,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: CupertinoColors.systemGrey6,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                CupertinoIcons.delete,
+                                size: 32,
+                                color: CupertinoColors.systemGrey,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      onPressed: () => _onPinEntered('0'),
-                    ),
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.systemGrey6,
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            CupertinoIcons.delete,
-                            size: 32,
-                            color: CupertinoColors.systemGrey,
-                          ),
-                        ),
-                      ),
-                      onPressed: _onPinDeleted,
-                    ),
-                  ]),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
