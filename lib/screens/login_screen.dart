@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:lost_item_tracker/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'item_list_screen.dart';
 import '../utils/storage_service.dart';
@@ -47,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (_confirmPin == _pin.join()) {
               _savePin();
             } else {
-              _showError('PINs do not match. Please try again.');
+              _showError(context.t.pinsDoNotMatch);
               setState(() {
                 _confirmPin = '';
                 _pin.clear();
@@ -78,11 +80,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _verifyPin() async {
     final prefs = await SharedPreferences.getInstance();
     final savedPin = prefs.getString('pin') ?? '1111';
-    
+
     if (savedPin == _pin.join()) {
       _navigateToHome();
     } else {
-      _showError('Incorrect PIN. Please try again.');
+      _showError(context.t.incorrectPin);
       setState(() {
         _pin.clear();
       });
@@ -103,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('Error'),
+        title: const Text("Error"),
         content: Text(message),
         actions: [
           CupertinoDialogAction(
@@ -131,17 +133,18 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                _isFirstTime ? 'Create PIN' : 'Enter PIN',
+                _isFirstTime ? context.t.createPin : context.t.enterPin,
                 style: const TextStyle(
                   fontSize: 24,
+                  color: Colors.black,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               if (_isFirstTime && _confirmPin.isNotEmpty) ...[
                 const SizedBox(height: 8),
-                const Text(
-                  'Confirm PIN',
-                  style: TextStyle(
+                Text(
+                  context.t.confirmPin,
+                  style: const TextStyle(
                     fontSize: 17,
                     color: CupertinoColors.systemGrey,
                   ),
@@ -317,4 +320,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-} 
+}
